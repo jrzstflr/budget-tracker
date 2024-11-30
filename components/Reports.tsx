@@ -6,14 +6,22 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 
+// Define the ReportData type
+interface ReportData {
+  name: string;
+  income: number;
+  expenses: number;
+}
+
 export default function Reports() {
   const [reportType, setReportType] = useState('weekly')
-  const [reportData, setReportData] = useState([])
+  // Specify the type of reportData as an array of ReportData objects
+  const [reportData, setReportData] = useState<ReportData[]>([])
 
   const generateReport = () => {
     // In a real application, this would fetch data from an API
     // For now, we'll use mock data
-    const mockData = [
+    const mockData: ReportData[] = [
       { name: 'Week 1', income: 1000, expenses: 800 },
       { name: 'Week 2', income: 1200, expenses: 900 },
       { name: 'Week 3', income: 1100, expenses: 950 },
@@ -73,4 +81,3 @@ export default function Reports() {
     </div>
   )
 }
-
