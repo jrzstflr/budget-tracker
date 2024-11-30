@@ -124,8 +124,7 @@ export default function IncomeTracker() {
   const handleEdit = (id: number) => {
     const incomeToEdit = incomes.find((income) => income.id === id);
     if (incomeToEdit) {
-      const { id, ...rest } = incomeToEdit; // Remove `id` since `newIncome` doesn't have it
-      setNewIncome(rest);
+      setNewIncome(incomeToEdit); // Set the entire income object without destructuring 'id'
     }
   };
 
