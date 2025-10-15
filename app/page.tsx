@@ -1,42 +1,49 @@
 "use client"
 
-import { useState } from 'react'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import Dashboard from '@/components/Dashboard'
-import ExpenseTracker from '@/components/ExpenseTracker'
-import IncomeTracker from '@/components/IncomeTracker'
-import Reports from '@/components/Reports'
-import BudgetPlanner from '@/components/BudgetPlanner'
-import Goals from '@/components/Goals'
-import Investments from '@/components/Investments'
-import Settings from '@/components/Settings'
+import { useState } from "react"
+import { Sidebar } from "@/components/Sidebar"
+import Dashboard from "@/components/Dashboard"
+import ExpenseTracker from "@/components/ExpenseTracker"
+import IncomeTracker from "@/components/IncomeTracker"
+import Reports from "@/components/Reports"
+import BudgetPlanner from "@/components/BudgetPlanner"
+import Goals from "@/components/Goals"
+import Investments from "@/components/Investments"
+import Settings from "@/components/Settings"
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState("dashboard")
 
+  const renderContent = () => {
+    switch (activeTab) {
+      case "dashboard":
+        return <Dashboard />
+      case "expenses":
+        return <ExpenseTracker />
+      case "income":
+        return <IncomeTracker />
+      case "reports":
+        return <Reports />
+      case "budget":
+        return <BudgetPlanner />
+      case "goals":
+        return <Goals />
+      case "investments":
+        return <Investments />
+      case "settings":
+        return <Settings />
+      default:
+        return <Dashboard />
+    }
+  }
+
   return (
-    <main className="container mx-auto p-4">
-      <h1 className="text-4xl font-bold mb-6">Jrz Budget Tracker Dashboard</h1>
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8">
-          <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-          <TabsTrigger value="expenses">Expenses</TabsTrigger>
-          <TabsTrigger value="income">Income</TabsTrigger>
-          <TabsTrigger value="reports">Reports</TabsTrigger>
-          <TabsTrigger value="budget">Budget</TabsTrigger>
-          <TabsTrigger value="goals">Goals</TabsTrigger>
-          <TabsTrigger value="investments">Investments</TabsTrigger>
-          <TabsTrigger value="settings">Settings</TabsTrigger>
-        </TabsList>
-        <TabsContent value="dashboard"><Dashboard /></TabsContent>
-        <TabsContent value="expenses"><ExpenseTracker /></TabsContent>
-        <TabsContent value="income"><IncomeTracker /></TabsContent>
-        <TabsContent value="reports"><Reports /></TabsContent>
-        <TabsContent value="budget"><BudgetPlanner /></TabsContent>
-        <TabsContent value="goals"><Goals /></TabsContent>
-        <TabsContent value="investments"><Investments /></TabsContent>
-        <TabsContent value="settings"><Settings /></TabsContent>
-      </Tabs>
-    </main>
+    <div className="flex min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+      <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
+
+      <main className="flex-1 lg:ml-64 pt-20 lg:pt-0">
+        <div className="container mx-auto p-4 md:p-6 lg:p-8 animate-in fade-in duration-500">{renderContent()}</div>
+      </main>
+    </div>
   )
 }

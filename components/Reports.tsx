@@ -17,6 +17,7 @@ import {
   Line,
 } from "recharts"
 import { expenseStorage, incomeStorage } from "@/lib/storage"
+import { Download } from "lucide-react"
 
 interface ReportData {
   name: string
@@ -144,75 +145,86 @@ export default function Reports() {
     const url = window.URL.createObjectURL(blob)
     const a = document.createElement("a")
     a.href = url
-    a.download = `budget-report-${reportType}-${new Date().toISOString().split("T")[0]}.csv`
+    a.download = `trackify-report-${reportType}-${new Date().toISOString().split("T")[0]}.csv`
     a.click()
     window.URL.revokeObjectURL(url)
   }
 
   return (
-    <div className="space-y-4">
-      <Card>
+    <div className="space-y-6">
+      {/* Page Header */}
+      <div>
+        <h2 className="text-3xl font-bold tracking-tight text-foreground">Financial Reports</h2>
+        <p className="text-muted-foreground mt-1">Analyze your income and expenses over time</p>
+      </div>
+
+      <Card className="shadow-sm">
         <CardHeader>
           <CardTitle>Generate Report</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Select value={reportType} onValueChange={setReportType}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select report type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="weekly">Weekly</SelectItem>
-              <SelectItem value="monthly">Monthly</SelectItem>
-              <SelectItem value="yearly">Yearly</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button onClick={generateReport}>Refresh Report</Button>
+          <div className="flex flex-col sm:flex-row gap-4">
+            <Select value={reportType} onValueChange={setReportType}>
+              <SelectTrigger className="sm:w-[200px]">
+                <SelectValue placeholder="Select report type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="weekly">Weekly</SelectItem>
+                <SelectItem value="monthly">Monthly</SelectItem>
+                <SelectItem value="yearly">Yearly</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button onClick={generateReport} variant="outline">
+              Refresh Report
+            </Button>
+          </div>
         </CardContent>
       </Card>
       {reportData.length > 0 ? (
         <>
-          <Card>
+          <Card className="shadow-sm">
             <CardHeader>
               <CardTitle>{reportType.charAt(0).toUpperCase() + reportType.slice(1)} Income vs Expenses</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={reportData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip formatter={(value: number) => `$${value.toFixed(2)}`} />
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis dataKey="name" className="text-xs" />
+                  <YAxis className="text-xs" />
+                  <Tooltip formatter={(value: number) => `₱${value.toFixed(2)}`} />
                   <Legend />
-                  <Bar dataKey="income" fill="#10b981" name="Income" />
-                  <Bar dataKey="expenses" fill="#ef4444" name="Expenses" />
+                  <Bar dataKey="income" fill="#10b981" name="Income" radius={[8, 8, 0, 0]} />
+                  <Bar dataKey="expenses" fill="#ef4444" name="Expenses" radius={[8, 8, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
           </Card>
-          <Card>
-            <CardHeader>
+          <Card className="shadow-sm">
+            <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Balance Trend</CardTitle>
+              <Button onClick={exportReport} variant="outline" size="sm" className="gap-2 bg-transparent">
+                <Download className="w-4 h-4" />
+                Export CSV
+              </Button>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={reportData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip formatter={(value: number) => `$${value.toFixed(2)}`} />
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis dataKey="name" className="text-xs" />
+                  <YAxis className="text-xs" />
+                  <Tooltip formatter={(value: number) => `₱${value.toFixed(2)}`} />
                   <Legend />
-                  <Line type="monotone" dataKey="balance" stroke="#3b82f6" strokeWidth={2} name="Balance" />
+                  <Line type="monotone" dataKey="balance" stroke="#3b82f6" strokeWidth={3} name="Balance" />
                 </LineChart>
               </ResponsiveContainer>
-              <Button onClick={exportReport} className="mt-4">
-                Export Report as CSV
-              </Button>
             </CardContent>
           </Card>
         </>
       ) : (
-        <Card>
-          <CardContent className="py-8">
+        <Card className="shadow-sm">
+          <CardContent className="py-12">
             <p className="text-center text-muted-foreground">
               No data available for the selected period. Add some income and expenses to generate reports.
             </p>
