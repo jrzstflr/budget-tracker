@@ -1,75 +1,85 @@
 "use client"
 
+import type React from "react"
+
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
-
-interface Goal {
-  id: number
-  name: string
-  targetAmount: number
-  currentAmount: number
-  deadline: string
-}
+import { goalStorage, type Goal } from "@/lib/storage"
 
 export default function Goals() {
   const [goals, setGoals] = useState<Goal[]>([])
-  const [newGoal, setNewGoal] = useState<Goal | Omit<Goal, "id">>({
+  const [newGoal, setNewGoal] = useState<Omit<Goal, "id">>({
     name: "",
-    targetAmount: 0,
-    currentAmount: 0,
+    targetAmount: "" as any,
+    currentAmount: "" as any,
     deadline: "",
   })
+  const [editingId, setEditingId] = useState<number | null>(null)
 
   useEffect(() => {
-    // Fetch goals from API or local storage
-    setGoals([
-      { id: 1, name: "Emergency Fund", targetAmount: 10000, currentAmount: 5000, deadline: "2024-12-31" },
-      { id: 2, name: "Vacation", targetAmount: 5000, currentAmount: 2000, deadline: "2024-06-30" },
-    ])
+    const loadedGoals = goalStorage.getAll()
+    setGoals(loadedGoals)
   }, [])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setNewGoal((prev) => ({
       ...prev,
-      [name]: name.includes("Amount") ? parseFloat(value) : value,
+      [name]: value,
     }))
   }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
-    if ("id" in newGoal) {
-      // If editing, update the existing goal
-      setGoals((prev) =>
-        prev.map((goal) => (goal.id === newGoal.id ? (newGoal as Goal) : goal))
-      )
+    if (editingId !== null) {
+      const updatedGoal: Goal = {
+        id: editingId,
+        ...newGoal,
+        targetAmount: Number(newGoal.targetAmount),
+        currentAmount: Number(newGoal.currentAmount),
+      }
+      goalStorage.update(editingId, updatedGoal)
+      setGoals((prev) => prev.map((goal) => (goal.id === editingId ? updatedGoal : goal)))
+      setEditingId(null)
     } else {
-      // Adding a new goal
-      const newGoalWithId = { ...newGoal, id: Date.now() } as Goal
+      const newGoalWithId: Goal = {
+        ...newGoal,
+        id: Date.now(),
+        targetAmount: Number(newGoal.targetAmount),
+        currentAmount: Number(newGoal.currentAmount),
+      }
+      goalStorage.add(newGoalWithId)
       setGoals((prev) => [...prev, newGoalWithId])
     }
 
     // Reset the form
     setNewGoal({
       name: "",
-      targetAmount: 0,
-      currentAmount: 0,
+      targetAmount: "" as any,
+      currentAmount: "" as any,
       deadline: "",
     })
   }
 
   const handleDelete = (id: number) => {
+    goalStorage.delete(id)
     setGoals((prev) => prev.filter((goal) => goal.id !== id))
   }
 
   const handleEdit = (id: number) => {
     const goalToEdit = goals.find((goal) => goal.id === id)
     if (goalToEdit) {
-      setNewGoal(goalToEdit)
+      setNewGoal({
+        name: goalToEdit.name,
+        targetAmount: goalToEdit.targetAmount as any,
+        currentAmount: goalToEdit.currentAmount as any,
+        deadline: goalToEdit.deadline,
+      })
+      setEditingId(id)
     }
   }
 
@@ -77,7 +87,7 @@ export default function Goals() {
     <div className="space-y-4">
       <Card>
         <CardHeader>
-          <CardTitle>Add New Goal</CardTitle>
+          <CardTitle>{editingId ? "Edit Goal" : "Add New Goal"}</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -96,6 +106,8 @@ export default function Goals() {
               value={newGoal.targetAmount}
               onChange={handleInputChange}
               required
+              min="0"
+              step="0.01"
             />
             <Input
               type="number"
@@ -104,6 +116,8 @@ export default function Goals() {
               value={newGoal.currentAmount}
               onChange={handleInputChange}
               required
+              min="0"
+              step="0.01"
             />
             <Input
               type="date"
@@ -113,7 +127,26 @@ export default function Goals() {
               onChange={handleInputChange}
               required
             />
-            <Button type="submit">{'id' in newGoal ? "Update Goal" : "Add Goal"}</Button>
+            <div className="flex gap-2">
+              <Button type="submit">{editingId ? "Update Goal" : "Add Goal"}</Button>
+              {editingId && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setEditingId(null)
+                    setNewGoal({
+                      name: "",
+                      targetAmount: "" as any,
+                      currentAmount: "" as any,
+                      deadline: "",
+                    })
+                  }}
+                >
+                  Cancel
+                </Button>
+              )}
+            </div>
           </form>
         </CardContent>
       </Card>
@@ -122,31 +155,42 @@ export default function Goals() {
           <CardTitle>Financial Goals</CardTitle>
         </CardHeader>
         <CardContent>
-          {goals.map((goal) => (
-            <div key={goal.id} className="mb-4">
-              <div className="flex justify-between mb-2">
-                <span>{goal.name}</span>
-                <span>
-                  ${goal.currentAmount.toFixed(2)} / ${goal.targetAmount.toFixed(2)}
-                </span>
-              </div>
-              <Progress value={(goal.currentAmount / goal.targetAmount) * 100} />
-              <div className="text-sm text-gray-500 mt-1">Deadline: {goal.deadline}</div>
-              <div className="mt-2">
-                <Button variant="outline" size="sm" onClick={() => handleEdit(goal.id)}>
-                  Edit
-                </Button>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => handleDelete(goal.id)}
-                  className="ml-2"
-                >
-                  Delete
-                </Button>
-              </div>
-            </div>
-          ))}
+          {goals.length > 0 ? (
+            goals.map((goal) => {
+              const percentage = (goal.currentAmount / goal.targetAmount) * 100
+              const daysLeft = Math.ceil(
+                (new Date(goal.deadline).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24),
+              )
+              return (
+                <div key={goal.id} className="mb-6 last:mb-0 p-4 border rounded-lg">
+                  <div className="flex justify-between mb-2">
+                    <span className="font-semibold text-lg">{goal.name}</span>
+                    <span className="text-sm font-medium">
+                      ${goal.currentAmount.toFixed(2)} / ${goal.targetAmount.toFixed(2)}
+                    </span>
+                  </div>
+                  <Progress value={Math.min(percentage, 100)} className="mb-2" />
+                  <div className="flex justify-between text-sm text-muted-foreground mb-3">
+                    <span>{percentage.toFixed(1)}% Complete</span>
+                    <span>
+                      Deadline: {goal.deadline}
+                      {daysLeft > 0 ? ` (${daysLeft} days left)` : " (Overdue)"}
+                    </span>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" onClick={() => handleEdit(goal.id)}>
+                      Edit
+                    </Button>
+                    <Button variant="destructive" size="sm" onClick={() => handleDelete(goal.id)}>
+                      Delete
+                    </Button>
+                  </div>
+                </div>
+              )
+            })
+          ) : (
+            <p className="text-center text-muted-foreground py-8">No goals set yet</p>
+          )}
         </CardContent>
       </Card>
     </div>

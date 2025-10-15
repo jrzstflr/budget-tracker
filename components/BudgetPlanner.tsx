@@ -1,83 +1,89 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import type React from "react"
+
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
-
-interface Budget {
-  id: number
-  category: string
-  amount: number
-  spent: number
-}
+import { budgetStorage, updateBudgetSpent, type Budget } from "@/lib/storage"
 
 export default function BudgetPlanner() {
   const [budgets, setBudgets] = useState<Budget[]>([])
-  const [newBudget, setNewBudget] = useState<Omit<Budget, 'id' | 'spent'>>({
-    category: '',
-    amount: 0
+  const [newBudget, setNewBudget] = useState<Omit<Budget, "id" | "spent">>({
+    category: "",
+    amount: "" as any,
   })
   const [editingId, setEditingId] = useState<number | null>(null)
 
   useEffect(() => {
-    // Fetch budgets from API or local storage
-    // For now, we'll use mock data
-    setBudgets([
-      { id: 1, category: 'Food', amount: 500, spent: 300 },
-      { id: 2, category: 'Transportation', amount: 200, spent: 150 },
-      { id: 3, category: 'Entertainment', amount: 100, spent: 80 },
-    ])
+    updateBudgetSpent()
+    const loadedBudgets = budgetStorage.getAll()
+    setBudgets(loadedBudgets)
+
+    // Listen for storage updates
+    const handleStorageUpdate = () => {
+      updateBudgetSpent()
+      const updatedBudgets = budgetStorage.getAll()
+      setBudgets(updatedBudgets)
+    }
+
+    window.addEventListener("storage-update", handleStorageUpdate)
+    return () => window.removeEventListener("storage-update", handleStorageUpdate)
   }, [])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
-    setNewBudget(prev => ({
+    setNewBudget((prev) => ({
       ...prev,
-      [name]: name === 'amount' ? parseFloat(value) : value
+      [name]: value,
     }))
   }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (editingId !== null) {
-      // Update existing budget
-      setBudgets((prev) =>
-        prev.map((budget) =>
-          budget.id === editingId
-            ? { ...budget, ...newBudget, amount: Number(newBudget.amount) }
-            : budget
-        )
-      )
+      const existingBudget = budgets.find((b) => b.id === editingId)
+      const updatedBudget: Budget = {
+        id: editingId,
+        ...newBudget,
+        amount: Number(newBudget.amount),
+        spent: existingBudget?.spent || 0,
+      }
+      budgetStorage.update(editingId, updatedBudget)
+      setBudgets((prev) => prev.map((budget) => (budget.id === editingId ? updatedBudget : budget)))
       setEditingId(null)
     } else {
-      // Add a new budget
-      setBudgets((prev) => [
-        ...prev,
-        {
-          id: Number(Date.now()), // Explicitly cast Date.now() to a number
-          ...newBudget,
-          amount: Number(newBudget.amount), // Ensure amount is converted to a number
-          spent: 0,
-        },
-      ])
+      const budgetWithId: Budget = {
+        id: Date.now(),
+        ...newBudget,
+        amount: Number(newBudget.amount),
+        spent: 0,
+      }
+      budgetStorage.add(budgetWithId)
+      setBudgets((prev) => [...prev, budgetWithId])
     }
+
+    // Update spent amounts
+    updateBudgetSpent()
+
     // Reset the form
-    setNewBudget({ category: '', amount: 0 })
+    setNewBudget({ category: "", amount: "" as any })
   }
 
   const handleDelete = (id: number) => {
-    setBudgets(prev => prev.filter(budget => budget.id !== id))
+    budgetStorage.delete(id)
+    setBudgets((prev) => prev.filter((budget) => budget.id !== id))
   }
 
   const handleEdit = (id: number) => {
-    const budgetToEdit = budgets.find(budget => budget.id === id)
+    const budgetToEdit = budgets.find((budget) => budget.id === id)
     if (budgetToEdit) {
       setEditingId(id)
       setNewBudget({
         category: budgetToEdit.category,
-        amount: budgetToEdit.amount,
+        amount: budgetToEdit.amount as any,
       })
     }
   }
@@ -86,7 +92,7 @@ export default function BudgetPlanner() {
     <div className="space-y-4">
       <Card>
         <CardHeader>
-          <CardTitle>Set Budget</CardTitle>
+          <CardTitle>{editingId ? "Edit Budget" : "Set Budget"}</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -116,11 +122,25 @@ export default function BudgetPlanner() {
                 value={newBudget.amount}
                 onChange={handleInputChange}
                 required
+                min="0"
+                step="0.01"
               />
             </div>
-            <Button type="submit">
-              {editingId !== null ? 'Update Budget' : 'Set Budget'}
-            </Button>
+            <div className="flex gap-2">
+              <Button type="submit">{editingId !== null ? "Update Budget" : "Set Budget"}</Button>
+              {editingId && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setEditingId(null)
+                    setNewBudget({ category: "", amount: "" as any })
+                  }}
+                >
+                  Cancel
+                </Button>
+              )}
+            </div>
           </form>
         </CardContent>
       </Card>
@@ -129,36 +149,39 @@ export default function BudgetPlanner() {
           <CardTitle>Budget Progress</CardTitle>
         </CardHeader>
         <CardContent>
-          {budgets.map((budget) => (
-            <div key={budget.id} className="mb-6 last:mb-0">
-              <div className="flex justify-between mb-2">
-                <span className="font-medium">{budget.category}</span>
-                <span className="text-muted-foreground">
-                  ${budget.spent.toFixed(2)} / ${budget.amount.toFixed(2)}
-                </span>
-              </div>
-              <Progress
-                value={(budget.spent / budget.amount) * 100}
-                className="mb-2"
-              />
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleEdit(budget.id)}
-                >
-                  Edit
-                </Button>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => handleDelete(budget.id)}
-                >
-                  Delete
-                </Button>
-              </div>
-            </div>
-          ))}
+          {budgets.length > 0 ? (
+            budgets.map((budget) => {
+              const percentage = (budget.spent / budget.amount) * 100
+              const isOverBudget = percentage > 100
+              return (
+                <div key={budget.id} className="mb-6 last:mb-0">
+                  <div className="flex justify-between mb-2">
+                    <span className="font-medium">{budget.category}</span>
+                    <span
+                      className={`text-sm ${isOverBudget ? "text-red-600 font-semibold" : "text-muted-foreground"}`}
+                    >
+                      ${budget.spent.toFixed(2)} / ${budget.amount.toFixed(2)}
+                      {isOverBudget && " (Over Budget!)"}
+                    </span>
+                  </div>
+                  <Progress
+                    value={Math.min(percentage, 100)}
+                    className={`mb-2 ${isOverBudget ? "[&>div]:bg-red-600" : ""}`}
+                  />
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" onClick={() => handleEdit(budget.id)}>
+                      Edit
+                    </Button>
+                    <Button variant="destructive" size="sm" onClick={() => handleDelete(budget.id)}>
+                      Delete
+                    </Button>
+                  </div>
+                </div>
+              )
+            })
+          ) : (
+            <p className="text-center text-muted-foreground py-8">No budgets set yet</p>
+          )}
         </CardContent>
       </Card>
     </div>

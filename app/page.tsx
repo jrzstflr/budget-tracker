@@ -16,7 +16,7 @@ export default function Home() {
 
   return (
     <main className="container mx-auto p-4">
-      <h1 className="text-4xl font-bold mb-6">Advanced Budget Tracker</h1>
+      <h1 className="text-4xl font-bold mb-6">Jrz Budget Tracker Dashboard</h1>
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8">
           <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
@@ -40,4 +40,3 @@ export default function Home() {
     </main>
   )
 }
-

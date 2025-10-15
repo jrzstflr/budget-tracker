@@ -1,40 +1,152 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  LineChart,
+  Line,
+} from "recharts"
+import { expenseStorage, incomeStorage } from "@/lib/storage"
 
-// Define the ReportData type
 interface ReportData {
-  name: string;
-  income: number;
-  expenses: number;
+  name: string
+  income: number
+  expenses: number
+  balance: number
 }
 
 export default function Reports() {
-  const [reportType, setReportType] = useState('weekly')
-  // Specify the type of reportData as an array of ReportData objects
+  const [reportType, setReportType] = useState("monthly")
   const [reportData, setReportData] = useState<ReportData[]>([])
 
   const generateReport = () => {
-    // In a real application, this would fetch data from an API
-    // For now, we'll use mock data
-    const mockData: ReportData[] = [
-      { name: 'Week 1', income: 1000, expenses: 800 },
-      { name: 'Week 2', income: 1200, expenses: 900 },
-      { name: 'Week 3', income: 1100, expenses: 950 },
-      { name: 'Week 4', income: 1300, expenses: 1000 },
-    ]
-    setReportData(mockData)
+    const expenses = expenseStorage.getAll()
+    const incomes = incomeStorage.getAll()
+
+    if (reportType === "monthly") {
+      // Group by month
+      const monthlyData = new Map<string, { income: number; expenses: number }>()
+
+      incomes.forEach((income) => {
+        const month = income.date.substring(0, 7) // YYYY-MM
+        const current = monthlyData.get(month) || { income: 0, expenses: 0 }
+        monthlyData.set(month, { ...current, income: current.income + income.amount })
+      })
+
+      expenses.forEach((expense) => {
+        const month = expense.date.substring(0, 7)
+        const current = monthlyData.get(month) || { income: 0, expenses: 0 }
+        monthlyData.set(month, { ...current, expenses: current.expenses + expense.amount })
+      })
+
+      const data: ReportData[] = Array.from(monthlyData.entries())
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([month, values]) => ({
+          name: new Date(month + "-01").toLocaleDateString("en-US", { month: "short", year: "numeric" }),
+          income: values.income,
+          expenses: values.expenses,
+          balance: values.income - values.expenses,
+        }))
+
+      setReportData(data)
+    } else if (reportType === "weekly") {
+      // Group by week
+      const weeklyData = new Map<string, { income: number; expenses: number }>()
+
+      const getWeekKey = (dateStr: string) => {
+        const date = new Date(dateStr)
+        const weekStart = new Date(date)
+        weekStart.setDate(date.getDate() - date.getDay())
+        return weekStart.toISOString().split("T")[0]
+      }
+
+      incomes.forEach((income) => {
+        const week = getWeekKey(income.date)
+        const current = weeklyData.get(week) || { income: 0, expenses: 0 }
+        weeklyData.set(week, { ...current, income: current.income + income.amount })
+      })
+
+      expenses.forEach((expense) => {
+        const week = getWeekKey(expense.date)
+        const current = weeklyData.get(week) || { income: 0, expenses: 0 }
+        weeklyData.set(week, { ...current, expenses: current.expenses + expense.amount })
+      })
+
+      const data: ReportData[] = Array.from(weeklyData.entries())
+        .sort(([a], [b]) => a.localeCompare(b))
+        .slice(-8) // Last 8 weeks
+        .map(([week, values]) => ({
+          name: new Date(week).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+          income: values.income,
+          expenses: values.expenses,
+          balance: values.income - values.expenses,
+        }))
+
+      setReportData(data)
+    } else if (reportType === "yearly") {
+      // Group by year
+      const yearlyData = new Map<string, { income: number; expenses: number }>()
+
+      incomes.forEach((income) => {
+        const year = income.date.substring(0, 4)
+        const current = yearlyData.get(year) || { income: 0, expenses: 0 }
+        yearlyData.set(year, { ...current, income: current.income + income.amount })
+      })
+
+      expenses.forEach((expense) => {
+        const year = expense.date.substring(0, 4)
+        const current = yearlyData.get(year) || { income: 0, expenses: 0 }
+        yearlyData.set(year, { ...current, expenses: current.expenses + expense.amount })
+      })
+
+      const data: ReportData[] = Array.from(yearlyData.entries())
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([year, values]) => ({
+          name: year,
+          income: values.income,
+          expenses: values.expenses,
+          balance: values.income - values.expenses,
+        }))
+
+      setReportData(data)
+    }
   }
 
+  useEffect(() => {
+    generateReport()
+  }, [reportType])
+
   const exportReport = () => {
-    // In a real application, this would generate a CSV or Excel file
-    // For now, we'll just log to console
-    console.log('Exporting report:', reportData)
-    alert('Report exported (check console)')
+    if (reportData.length === 0) {
+      alert("No data to export. Please generate a report first.")
+      return
+    }
+
+    const headers = ["Period", "Income", "Expenses", "Balance"]
+    const csvContent = [
+      headers.join(","),
+      ...reportData.map(
+        (row) => `${row.name},${row.income.toFixed(2)},${row.expenses.toFixed(2)},${row.balance.toFixed(2)}`,
+      ),
+    ].join("\n")
+
+    const blob = new Blob([csvContent], { type: "text/csv" })
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = `budget-report-${reportType}-${new Date().toISOString().split("T")[0]}.csv`
+    a.click()
+    window.URL.revokeObjectURL(url)
   }
 
   return (
@@ -54,27 +166,56 @@ export default function Reports() {
               <SelectItem value="yearly">Yearly</SelectItem>
             </SelectContent>
           </Select>
-          <Button onClick={generateReport}>Generate Report</Button>
+          <Button onClick={generateReport}>Refresh Report</Button>
         </CardContent>
       </Card>
-      {reportData.length > 0 && (
+      {reportData.length > 0 ? (
+        <>
+          <Card>
+            <CardHeader>
+              <CardTitle>{reportType.charAt(0).toUpperCase() + reportType.slice(1)} Income vs Expenses</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={reportData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip formatter={(value: number) => `$${value.toFixed(2)}`} />
+                  <Legend />
+                  <Bar dataKey="income" fill="#10b981" name="Income" />
+                  <Bar dataKey="expenses" fill="#ef4444" name="Expenses" />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Balance Trend</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={reportData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip formatter={(value: number) => `$${value.toFixed(2)}`} />
+                  <Legend />
+                  <Line type="monotone" dataKey="balance" stroke="#3b82f6" strokeWidth={2} name="Balance" />
+                </LineChart>
+              </ResponsiveContainer>
+              <Button onClick={exportReport} className="mt-4">
+                Export Report as CSV
+              </Button>
+            </CardContent>
+          </Card>
+        </>
+      ) : (
         <Card>
-          <CardHeader>
-            <CardTitle>{reportType.charAt(0).toUpperCase() + reportType.slice(1)} Report</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={reportData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="income" fill="#8884d8" />
-                <Bar dataKey="expenses" fill="#82ca9d" />
-              </BarChart>
-            </ResponsiveContainer>
-            <Button onClick={exportReport} className="mt-4">Export Report</Button>
+          <CardContent className="py-8">
+            <p className="text-center text-muted-foreground">
+              No data available for the selected period. Add some income and expenses to generate reports.
+            </p>
           </CardContent>
         </Card>
       )}

@@ -6,7 +6,7 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Advanced Budget Tracker',
+  title: 'Jrz Dev Finance Tracker Dashboard',
   description: 'Manage your finances with ease',
 }
 
@@ -21,4 +21,3 @@ export default function RootLayout({
     </html>
   )
 }
-
