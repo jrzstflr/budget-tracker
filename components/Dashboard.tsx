@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useAuth } from "@/contexts/AuthContext"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   PieChart,
@@ -15,10 +16,11 @@ import {
   YAxis,
   CartesianGrid,
 } from "recharts"
-import { expenseStorage, incomeStorage } from "@/lib/storage"
+import { expenseService, incomeService } from "@/lib/firestore"
 import { TrendingUp, TrendingDown, Wallet, ArrowUpRight, ArrowDownRight, Sparkles } from "lucide-react"
 
 export default function Dashboard() {
+  const { user } = useAuth()
   const [totalIncome, setTotalIncome] = useState<number>(0)
   const [totalExpenses, setTotalExpenses] = useState<number>(0)
   const [balance, setBalance] = useState<number>(0)
@@ -27,91 +29,99 @@ export default function Dashboard() {
   const [weeklyComparison, setWeeklyComparison] = useState({ current: 0, previous: 0, change: 0 })
   const [monthlyComparison, setMonthlyComparison] = useState({ current: 0, previous: 0, change: 0 })
 
-  const loadData = () => {
-    const expenses = expenseStorage.getAll()
-    const incomes = incomeStorage.getAll()
+  const loadData = async () => {
+    if (!user) {
+      setIsLoading(false)
+      return
+    }
 
-    const totalExp = expenses.reduce((sum, exp) => sum + exp.amount, 0)
-    const totalInc = incomes.reduce((sum, inc) => sum + inc.amount, 0)
+    try {
+      console.log("[v0] Loading dashboard data from Firebase for user:", user.uid)
 
-    setTotalExpenses(totalExp)
-    setTotalIncome(totalInc)
-    setBalance(totalInc - totalExp)
+      // Fetch expenses and incomes from Firebase
+      const expenses = await expenseService.getAll(user.uid)
+      const incomes = await incomeService.getAll(user.uid)
 
-    const categoryMap = new Map<string, number>()
-    expenses.forEach((expense) => {
-      const current = categoryMap.get(expense.category) || 0
-      categoryMap.set(expense.category, current + expense.amount)
-    })
+      console.log("[v0] Loaded expenses:", expenses.length, "incomes:", incomes.length)
 
-    const categoryData = Array.from(categoryMap.entries()).map(([name, value]) => ({
-      name,
-      value,
-    }))
+      const totalExp = expenses.reduce((sum, exp) => sum + exp.amount, 0)
+      const totalInc = incomes.reduce((sum, inc) => sum + inc.amount, 0)
 
-    setExpensesByCategory(categoryData)
+      setTotalExpenses(totalExp)
+      setTotalIncome(totalInc)
+      setBalance(totalInc - totalExp)
 
-    const now = new Date()
-    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-    const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000)
-
-    const currentWeekExpenses = expenses
-      .filter((e) => new Date(e.date) >= weekAgo)
-      .reduce((sum, e) => sum + e.amount, 0)
-    const previousWeekExpenses = expenses
-      .filter((e) => new Date(e.date) >= twoWeeksAgo && new Date(e.date) < weekAgo)
-      .reduce((sum, e) => sum + e.amount, 0)
-
-    const weeklyChange =
-      previousWeekExpenses > 0 ? ((currentWeekExpenses - previousWeekExpenses) / previousWeekExpenses) * 100 : 0
-
-    setWeeklyComparison({
-      current: currentWeekExpenses,
-      previous: previousWeekExpenses,
-      change: weeklyChange,
-    })
-
-    const currentMonth = now.getMonth()
-    const currentYear = now.getFullYear()
-    const previousMonth = currentMonth === 0 ? 11 : currentMonth - 1
-    const previousYear = currentMonth === 0 ? currentYear - 1 : currentYear
-
-    const currentMonthExpenses = expenses
-      .filter((e) => {
-        const date = new Date(e.date)
-        return date.getMonth() === currentMonth && date.getFullYear() === currentYear
+      const categoryMap = new Map<string, number>()
+      expenses.forEach((expense) => {
+        const current = categoryMap.get(expense.category) || 0
+        categoryMap.set(expense.category, current + expense.amount)
       })
-      .reduce((sum, e) => sum + e.amount, 0)
 
-    const previousMonthExpenses = expenses
-      .filter((e) => {
-        const date = new Date(e.date)
-        return date.getMonth() === previousMonth && date.getFullYear() === previousYear
+      const categoryData = Array.from(categoryMap.entries()).map(([name, value]) => ({
+        name,
+        value,
+      }))
+
+      setExpensesByCategory(categoryData)
+
+      const now = new Date()
+      const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+      const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000)
+
+      const currentWeekExpenses = expenses
+        .filter((e) => new Date(e.date) >= weekAgo)
+        .reduce((sum, e) => sum + e.amount, 0)
+      const previousWeekExpenses = expenses
+        .filter((e) => new Date(e.date) >= twoWeeksAgo && new Date(e.date) < weekAgo)
+        .reduce((sum, e) => sum + e.amount, 0)
+
+      const weeklyChange =
+        previousWeekExpenses > 0 ? ((currentWeekExpenses - previousWeekExpenses) / previousWeekExpenses) * 100 : 0
+
+      setWeeklyComparison({
+        current: currentWeekExpenses,
+        previous: previousWeekExpenses,
+        change: weeklyChange,
       })
-      .reduce((sum, e) => sum + e.amount, 0)
 
-    const monthlyChange =
-      previousMonthExpenses > 0 ? ((currentMonthExpenses - previousMonthExpenses) / previousMonthExpenses) * 100 : 0
+      const currentMonth = now.getMonth()
+      const currentYear = now.getFullYear()
+      const previousMonth = currentMonth === 0 ? 11 : currentMonth - 1
+      const previousYear = currentMonth === 0 ? currentYear - 1 : currentYear
 
-    setMonthlyComparison({
-      current: currentMonthExpenses,
-      previous: previousMonthExpenses,
-      change: monthlyChange,
-    })
+      const currentMonthExpenses = expenses
+        .filter((e) => {
+          const date = new Date(e.date)
+          return date.getMonth() === currentMonth && date.getFullYear() === currentYear
+        })
+        .reduce((sum, e) => sum + e.amount, 0)
 
-    setIsLoading(false)
+      const previousMonthExpenses = expenses
+        .filter((e) => {
+          const date = new Date(e.date)
+          return date.getMonth() === previousMonth && date.getFullYear() === previousYear
+        })
+        .reduce((sum, e) => sum + e.amount, 0)
+
+      const monthlyChange =
+        previousMonthExpenses > 0 ? ((currentMonthExpenses - previousMonthExpenses) / previousMonthExpenses) * 100 : 0
+
+      setMonthlyComparison({
+        current: currentMonthExpenses,
+        previous: previousMonthExpenses,
+        change: monthlyChange,
+      })
+
+      setIsLoading(false)
+    } catch (error) {
+      console.error("[v0] Error loading dashboard data:", error)
+      setIsLoading(false)
+    }
   }
 
   useEffect(() => {
     loadData()
-
-    const handleStorageUpdate = () => {
-      loadData()
-    }
-
-    window.addEventListener("storage-update", handleStorageUpdate)
-    return () => window.removeEventListener("storage-update", handleStorageUpdate)
-  }, [])
+  }, [user])
 
   const COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899", "#14b8a6", "#f97316"]
 
@@ -123,6 +133,14 @@ export default function Dashboard() {
             <CardTitle>Loading...</CardTitle>
           </CardHeader>
         </Card>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <p className="text-muted-foreground">Please log in to view your dashboard</p>
       </div>
     )
   }

@@ -151,9 +151,9 @@
     text-wrap: balance;
   }
 
-  /* Added SaaS-style utility classes for enhanced UI effects */
+  /* Removed glass-effect transparency and replaced with solid backgrounds for better readability */
   .glass-effect {
-    @apply bg-card/80 backdrop-blur-xl border border-border/50;
+    @apply bg-card border border-border shadow-sm;
   }
 
   .card-hover {
