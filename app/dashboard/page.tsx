@@ -12,6 +12,7 @@ import Investments from "@/components/Investments"
 import Settings from "@/components/Settings"
 import { ThemeToggle } from "@/components/ThemeToggle"
 import { UserMenu } from "@/components/UserMenu"
+import Profile from "@/components/Profile"
 
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState("dashboard")
@@ -32,6 +33,8 @@ export default function DashboardPage() {
         return <Goals />
       case "investments":
         return <Investments />
+      case "profile":
+        return <Profile />
       case "settings":
         return <Settings />
       default:
@@ -47,7 +50,7 @@ export default function DashboardPage() {
         {/* Top Bar with Theme Toggle & User Menu */}
         <div className="fixed top-4 right-4 z-50 flex items-center gap-2 lg:top-6 lg:right-6">
           <ThemeToggle />
-          <UserMenu />
+          <UserMenu onNavigate={setActiveTab} />
         </div>
 
         <div className="container mx-auto p-4 md:p-6 lg:p-8 animate-in fade-in duration-500">{renderContent()}</div>
