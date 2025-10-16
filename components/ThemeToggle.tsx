@@ -1,33 +1,159 @@
-"use client"
+'use client'
 
-import { Moon, Sun } from "lucide-react"
-import { useTheme } from "@/components/theme-provider"
-import { Button } from "@/components/ui/button"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import React, { useCallback, useEffect, useState } from "react"
+import { useTheme } from 'next-themes'
+import { useSettings } from '@/hooks/useSettings'
+import type { Mode } from '@/contexts/settingsContext'
+import { ThemeToggleButton, useThemeTransition } from "@/components/ui/shadcn-io/theme-toggle-button"
 
-export function ThemeToggle() {
-  const { theme, setTheme } = useTheme()
+export const ThemeToggle = () => {
+  const { setTheme, theme } = useTheme()
+  const { settings, updateSettings } = useSettings()
+  const { startTransition } = useThemeTransition()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const handleThemeToggle = useCallback(() => {
+    const newMode: Mode = settings.mode === 'dark' ? 'light' : 'dark'
+    
+    startTransition(() => {
+      const updatedSettings = {
+        ...settings,
+        mode: newMode,
+        theme: {
+          ...settings.theme,
+          styles: {
+            light: settings.theme.styles?.light || {},
+            dark: settings.theme.styles?.dark || {}
+          }
+        }
+      }
+      
+      updateSettings(updatedSettings)
+      setTheme(newMode)
+    })
+  }, [settings, updateSettings, setTheme, startTransition])
+
+  const currentTheme = settings.mode === 'system' 
+    ? (theme as 'light' | 'dark') || 'light'
+    : settings.mode as 'light' | 'dark'
+
+  if (!mounted) {
+    return (
+      <div className="h-10 w-10 rounded-full border border-input bg-background" />
+    )
+  }
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon" className="bg-card border-border hover:bg-accent">
-          <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-          <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-          <span className="sr-only">Toggle theme</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="bg-card border-border">
-        <DropdownMenuItem onClick={() => setTheme("light")} className="cursor-pointer">
-          Light
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("dark")} className="cursor-pointer">
-          Dark
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("system")} className="cursor-pointer">
-          System
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <ThemeToggleButton
+      theme={currentTheme}
+      onClick={handleThemeToggle}
+      variant="circle"
+      start="center"
+    />
   )
 }
+
+const ThemeToggleVariantsDemo = () => {
+  const { setTheme, theme } = useTheme()
+  const { settings, updateSettings } = useSettings()
+  const { startTransition } = useThemeTransition()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const handleThemeToggle = useCallback(() => {
+    const newMode: Mode = settings.mode === 'dark' ? 'light' : 'dark'
+    
+    startTransition(() => {
+      const updatedSettings = {
+        ...settings,
+        mode: newMode,
+        theme: {
+          ...settings.theme,
+          styles: {
+            light: settings.theme.styles?.light || {},
+            dark: settings.theme.styles?.dark || {}
+          }
+        }
+      }
+      
+      updateSettings(updatedSettings)
+      setTheme(newMode)
+    })
+  }, [settings, updateSettings, setTheme, startTransition])
+
+  const currentTheme = settings.mode === 'system' 
+    ? (theme as 'light' | 'dark') || 'light'
+    : settings.mode as 'light' | 'dark'
+
+  if (!mounted) {
+    return null
+  }
+
+  return (
+    <div className="flex items-center justify-center gap-8 p-8">
+      {/* Circle animation */}
+      <div className="flex flex-col items-center gap-3">
+        <ThemeToggleButton
+          theme={currentTheme}
+          onClick={handleThemeToggle}
+          variant="circle"
+          start="center"
+        />
+        <div className="text-center">
+          <span className="text-xs font-medium">Circle</span>
+          <p className="text-xs text-muted-foreground">Expanding circle</p>
+        </div>
+      </div>
+
+      {/* Circle blur animation */}
+      <div className="flex flex-col items-center gap-3">
+        <ThemeToggleButton
+          theme={currentTheme}
+          onClick={handleThemeToggle}
+          variant="circle-blur"
+          start="top-right"
+        />
+        <div className="text-center">
+          <span className="text-xs font-medium">Circle Blur</span>
+          <p className="text-xs text-muted-foreground">Soft-edge circle</p>
+        </div>
+      </div>
+
+      {/* Polygon animation */}
+      <div className="flex flex-col items-center gap-3">
+        <ThemeToggleButton
+          theme={currentTheme}
+          onClick={handleThemeToggle}
+          variant="polygon"
+        />
+        <div className="text-center">
+          <span className="text-xs font-medium">Polygon</span>
+          <p className="text-xs text-muted-foreground">Diagonal wipe</p>
+        </div>
+      </div>
+
+      {/* GIF animation */}
+      <div className="flex flex-col items-center gap-3">
+        <ThemeToggleButton
+          theme={currentTheme}
+          onClick={handleThemeToggle}
+          variant="gif"
+          url="https://media.giphy.com/media/KBbr4hHl9DSahKvInO/giphy.gif?cid=790b76112m5eeeydoe7et0cr3j3ekb1erunxozyshuhxx2vl&ep=v1_stickers_search&rid=giphy.gif&ct=s"
+        />
+        <div className="text-center">
+          <span className="text-xs font-medium">GIF Mask</span>
+          <p className="text-xs text-muted-foreground">Custom animation</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default ThemeToggleVariantsDemo
