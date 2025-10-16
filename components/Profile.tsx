@@ -1,114 +1,210 @@
 "use client"
 
-import * as React from "react"
-import * as ToastPrimitives from "@radix-ui/react-toast"
-import { cva, type VariantProps } from "class-variance-authority"
-import { X } from "lucide-react"
+import { useAuth } from "@/contexts/AuthContext"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { User, Mail, Calendar, Shield } from "lucide-react"
+import { useState } from "react"
 
-import { cn } from "@/lib/utils"
+export default function Profile() {
+  const { user } = useAuth()
+  const [isEditing, setIsEditing] = useState(false)
 
-const ToastProvider = ToastPrimitives.Provider
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <p className="text-muted-foreground">Please log in to view your profile</p>
+      </div>
+    )
+  }
 
-const ToastViewport = React.forwardRef<
-  React.ElementRef<typeof ToastPrimitives.Viewport>,
-  React.ComponentPropsWithoutRef<typeof ToastPrimitives.Viewport>
->(({ className, ...props }, ref) => (
-  <ToastPrimitives.Viewport
-    ref={ref}
-    className={cn(
-      "fixed bottom-0 right-0 z-[100] flex max-h-screen w-full flex-col-reverse p-4 sm:bottom-4 sm:right-4 sm:flex-col md:max-w-[420px] gap-2",
-      className,
-    )}
-    {...props}
-  />
-))
-ToastViewport.displayName = ToastPrimitives.Viewport.displayName
+  const initials =
+    user.displayName
+      ?.split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase() ||
+    user.email?.[0].toUpperCase() ||
+    "U"
 
-const toastVariants = cva(
-  "group pointer-events-auto relative flex w-full items-center justify-between space-x-4 overflow-hidden rounded-lg border p-4 pr-8 shadow-2xl transition-all data-[swipe=cancel]:translate-x-0 data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)] data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[swipe=move]:transition-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[swipe=end]:animate-out data-[state=closed]:fade-out-80 data-[state=closed]:slide-out-to-right-full data-[state=open]:slide-in-from-bottom-full backdrop-blur-sm",
-  {
-    variants: {
-      variant: {
-        default: "border-border bg-card/95 text-foreground shadow-lg",
-        destructive:
-          "destructive group border-destructive/50 bg-destructive/95 text-destructive-foreground shadow-lg shadow-destructive/20",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-    },
-  },
-)
+  const createdDate = user.metadata.creationTime
+    ? new Date(user.metadata.creationTime).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+    : "Unknown"
 
-const Toast = React.forwardRef<
-  React.ElementRef<typeof ToastPrimitives.Root>,
-  React.ComponentPropsWithoutRef<typeof ToastPrimitives.Root> & VariantProps<typeof toastVariants>
->(({ className, variant, ...props }, ref) => {
-  return <ToastPrimitives.Root ref={ref} className={cn(toastVariants({ variant }), className)} {...props} />
-})
-Toast.displayName = ToastPrimitives.Root.displayName
+  return (
+    <div className="space-y-6 max-w-4xl">
+      <div>
+        <h1 className="text-3xl font-bold text-foreground">Profile</h1>
+        <p className="text-muted-foreground mt-2">Manage your account information</p>
+      </div>
 
-const ToastAction = React.forwardRef<
-  React.ElementRef<typeof ToastPrimitives.Action>,
-  React.ComponentPropsWithoutRef<typeof ToastPrimitives.Action>
->(({ className, ...props }, ref) => (
-  <ToastPrimitives.Action
-    ref={ref}
-    className={cn(
-      "inline-flex h-8 shrink-0 items-center justify-center rounded-md border bg-transparent px-3 text-sm font-medium ring-offset-background transition-colors hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 group-[.destructive]:border-muted/40 group-[.destructive]:hover:border-destructive/30 group-[.destructive]:hover:bg-destructive group-[.destructive]:hover:text-destructive-foreground group-[.destructive]:focus:ring-destructive",
-      className,
-    )}
-    {...props}
-  />
-))
-ToastAction.displayName = ToastPrimitives.Action.displayName
+      {/* Profile Header Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <User className="w-5 h-5" />
+            Account Information
+          </CardTitle>
+          <CardDescription>Your personal details and account status</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Avatar and Basic Info */}
+          <div className="flex items-center gap-6">
+            <Avatar className="h-24 w-24 ring-4 ring-primary/10">
+              <AvatarImage src={user.photoURL || undefined} alt={user.displayName || "User"} />
+              <AvatarFallback className="bg-primary text-primary-foreground text-2xl">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+            <div className="space-y-2">
+              <h2 className="text-2xl font-bold">{user.displayName || "User"}</h2>
+              <p className="text-muted-foreground flex items-center gap-2">
+                <Mail className="w-4 h-4" />
+                {user.email}
+              </p>
+              <p className="text-sm text-muted-foreground flex items-center gap-2">
+                <Calendar className="w-4 h-4" />
+                Member since {createdDate}
+              </p>
+            </div>
+          </div>
 
-const ToastClose = React.forwardRef<
-  React.ElementRef<typeof ToastPrimitives.Close>,
-  React.ComponentPropsWithoutRef<typeof ToastPrimitives.Close>
->(({ className, ...props }, ref) => (
-  <ToastPrimitives.Close
-    ref={ref}
-    className={cn(
-      "absolute right-2 top-2 rounded-md p-1 text-foreground/50 transition-all hover:text-foreground hover:bg-accent focus:opacity-100 focus:outline-none focus:ring-2 group-hover:opacity-100 group-[.destructive]:text-red-300 group-[.destructive]:hover:text-red-50 group-[.destructive]:hover:bg-red-500/20 group-[.destructive]:focus:ring-red-400 group-[.destructive]:focus:ring-offset-red-600",
-      className,
-    )}
-    toast-close=""
-    {...props}
-  >
-    <X className="h-4 w-4" />
-  </ToastPrimitives.Close>
-))
-ToastClose.displayName = ToastPrimitives.Close.displayName
+          {/* Divider */}
+          <div className="border-t border-border" />
 
-const ToastTitle = React.forwardRef<
-  React.ElementRef<typeof ToastPrimitives.Title>,
-  React.ComponentPropsWithoutRef<typeof ToastPrimitives.Title>
->(({ className, ...props }, ref) => (
-  <ToastPrimitives.Title ref={ref} className={cn("text-sm font-semibold", className)} {...props} />
-))
-ToastTitle.displayName = ToastPrimitives.Title.displayName
+          {/* Profile Details */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Label htmlFor="displayName" className="flex items-center gap-2">
+                <User className="w-4 h-4" />
+                Display Name
+              </Label>
+              <Input
+                id="displayName"
+                value={user.displayName || ""}
+                disabled={!isEditing}
+                placeholder="Your name"
+              />
+            </div>
 
-const ToastDescription = React.forwardRef<
-  React.ElementRef<typeof ToastPrimitives.Description>,
-  React.ComponentPropsWithoutRef<typeof ToastPrimitives.Description>
->(({ className, ...props }, ref) => (
-  <ToastPrimitives.Description ref={ref} className={cn("text-sm opacity-90", className)} {...props} />
-))
-ToastDescription.displayName = ToastPrimitives.Description.displayName
+            <div className="space-y-2">
+              <Label htmlFor="email" className="flex items-center gap-2">
+                <Mail className="w-4 h-4" />
+                Email Address
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                value={user.email || ""}
+                disabled
+                placeholder="your.email@example.com"
+              />
+            </div>
 
-type ToastProps = React.ComponentPropsWithoutRef<typeof Toast>
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <Shield className="w-4 h-4" />
+                Email Verified
+              </Label>
+              <div className="flex items-center gap-2">
+                <div
+                  className={`px-3 py-2 rounded-md text-sm font-medium ${
+                    user.emailVerified
+                      ? "bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400"
+                      : "bg-yellow-100 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400"
+                  }`}
+                >
+                  {user.emailVerified ? "Verified" : "Not Verified"}
+                </div>
+              </div>
+            </div>
 
-type ToastActionElement = React.ReactElement<typeof ToastAction>
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <Calendar className="w-4 h-4" />
+                Last Sign In
+              </Label>
+              <div className="px-3 py-2 rounded-md bg-muted text-sm">
+                {user.metadata.lastSignInTime
+                  ? new Date(user.metadata.lastSignInTime).toLocaleString()
+                  : "Unknown"}
+              </div>
+            </div>
+          </div>
 
-export {
-  type ToastProps,
-  type ToastActionElement,
-  ToastProvider,
-  ToastViewport,
-  Toast,
-  ToastTitle,
-  ToastDescription,
-  ToastClose,
-  ToastAction,
+          {/* Actions */}
+          <div className="flex gap-3 pt-4">
+            <Button
+              onClick={() => setIsEditing(!isEditing)}
+              variant={isEditing ? "default" : "outline"}
+            >
+              {isEditing ? "Save Changes" : "Edit Profile"}
+            </Button>
+            {isEditing && (
+              <Button variant="outline" onClick={() => setIsEditing(false)}>
+                Cancel
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Authentication Method Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Shield className="w-5 h-5" />
+            Authentication
+          </CardTitle>
+          <CardDescription>Your sign-in method and security settings</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
+              <div>
+                <p className="font-medium">Sign-in Provider</p>
+                <p className="text-sm text-muted-foreground">
+                  {user.providerData[0]?.providerId === "google.com"
+                    ? "Google"
+                    : user.providerData[0]?.providerId === "github.com"
+                    ? "GitHub"
+                    : "Email/Password"}
+                </p>
+              </div>
+              <div className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm font-medium">
+                Active
+              </div>
+            </div>
+
+            <div className="p-4 bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800 rounded-lg">
+              <p className="text-sm text-blue-800 dark:text-blue-200">
+                <strong>Security Tip:</strong> Keep your account secure by using a strong password and enabling
+                two-factor authentication when available.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* User ID Card (for developers) */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm font-medium text-muted-foreground">Developer Information</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            <Label className="text-xs">User ID</Label>
+            <div className="p-2 bg-muted rounded font-mono text-xs break-all">{user.uid}</div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
 }
