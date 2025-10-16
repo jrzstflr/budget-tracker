@@ -1,3 +1,4 @@
+// components/Sidebar.tsx - FIXED VERSION
 "use client"
 
 import type React from "react"
@@ -14,10 +15,7 @@ import {
   LineChart,
   Settings,
   Menu,
-  Moon,
-  Sun,
 } from "lucide-react"
-import { useTheme } from "@/components/theme-provider"
 import Image from "next/image"
 
 interface NavItem {
@@ -43,23 +41,13 @@ interface SidebarProps {
 }
 
 export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
-  const { theme, setTheme } = useTheme()
-
-  const toggleTheme = () => {
-    const currentTheme =
-      theme === "system" ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light") : theme
-    setTheme(currentTheme === "dark" ? "light" : "dark")
-  }
-
-  const isDark = theme === "dark" || (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches)
-
   return (
     <>
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 bg-gradient-to-b from-card to-card/95 border-r border-border/50 backdrop-blur-xl shadow-xl">
+      <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 bg-card border-r border-border shadow-xl">
         <div className="flex flex-col h-full">
-          {/* Logo/Brand */}
-          <div className="flex items-center gap-3 px-6 py-6 border-b border-border/50">
+          {/* Logo/Brand - FIXED: Solid background and visible text */}
+          <div className="flex items-center gap-3 px-6 py-6 border-b border-border bg-card">
             <div className="relative w-10 h-10 rounded-xl overflow-hidden shadow-lg ring-2 ring-blue-500/10">
               <Image
                 src="https://github.com/jrzstflr/logo2/blob/main/jrz_logo_v2.png?raw=true"
@@ -71,7 +59,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
               />
             </div>
             <div>
-              <h1 className="text-xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+              <h1 className="text-xl font-bold text-foreground">
                 Trackify
               </h1>
               <p className="text-xs text-muted-foreground">Smart Budget Dashboard</p>
@@ -79,7 +67,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
+          <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto bg-card">
             {navItems.map((item) => {
               const Icon = item.icon
               const isActive = activeTab === item.href
@@ -113,27 +101,14 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
           </nav>
 
           {/* Footer */}
-          <div className="px-4 py-4 border-t border-border/50 space-y-3">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={toggleTheme}
-              className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-accent/50 to-accent/30 hover:from-accent hover:to-accent/50 border-border/50 hover:border-border transition-all duration-200 hover:shadow-md group"
-            >
-              {isDark ? (
-                <Sun className="w-4 h-4 transition-transform duration-200 group-hover:rotate-45" />
-              ) : (
-                <Moon className="w-4 h-4 transition-transform duration-200 group-hover:-rotate-12" />
-              )}
-              {isDark ? "Light Mode" : "Dark Mode"}
-            </Button>
+          <div className="px-4 py-4 border-t border-border bg-card">
             <p className="text-xs text-muted-foreground text-center font-medium">Stay on track. Stay in control.</p>
           </div>
         </div>
       </aside>
 
-      {/* Mobile Header with Hamburger */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-xl border-b border-border/50 shadow-lg">
+      {/* Mobile Header - FIXED: Solid background */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-card border-b border-border shadow-lg">
         <div className="flex items-center justify-between px-4 py-4">
           {/* Logo/Brand */}
           <div className="flex items-center gap-2">
@@ -148,102 +123,88 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
               />
             </div>
             <div>
-              <h1 className="text-lg font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+              <h1 className="text-lg font-bold text-foreground">
                 Trackify
               </h1>
             </div>
           </div>
 
-          {/* Theme Toggle Button */}
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleTheme}
-              className="hover:bg-accent/50 transition-all duration-200 hover:scale-105 group"
-            >
-              {isDark ? (
-                <Sun className="w-5 h-5 transition-transform duration-200 group-hover:rotate-45" />
-              ) : (
-                <Moon className="w-5 h-5 transition-transform duration-200 group-hover:-rotate-12" />
-              )}
-            </Button>
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="hover:bg-accent/50 transition-all duration-200 hover:scale-105"
-                >
-                  <Menu className="w-6 h-6" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="w-64 p-0 bg-gradient-to-b from-card to-card/95 backdrop-blur-xl">
-                <div className="flex flex-col h-full">
-                  {/* Mobile Logo */}
-                  <div className="flex items-center gap-3 px-6 py-6 border-b border-border/50">
-                    <div className="relative w-10 h-10 rounded-xl overflow-hidden shadow-lg">
-                      <Image
-                        src="https://github.com/jrzstflr/logo2/blob/main/jrz_logo_v2.png?raw=true"
-                        alt="Trackify Logo"
-                        width={40}
-                        height={40}
-                        className="object-contain"
-                        priority
-                      />
-                    </div>
-                    <div>
-                      <h1 className="text-xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-                        Trackify
-                      </h1>
-                      <p className="text-xs text-muted-foreground">Smart Budget Dashboard</p>
-                    </div>
+          {/* Menu Button */}
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="hover:bg-accent/50 transition-all duration-200 hover:scale-105"
+              >
+                <Menu className="w-6 h-6" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-64 p-0 bg-card border-r border-border">
+              <div className="flex flex-col h-full">
+                {/* Mobile Logo */}
+                <div className="flex items-center gap-3 px-6 py-6 border-b border-border bg-card">
+                  <div className="relative w-10 h-10 rounded-xl overflow-hidden shadow-lg">
+                    <Image
+                      src="https://github.com/jrzstflr/logo2/blob/main/jrz_logo_v2.png?raw=true"
+                      alt="Trackify Logo"
+                      width={40}
+                      height={40}
+                      className="object-contain"
+                      priority
+                    />
                   </div>
-
-                  {/* Mobile Navigation */}
-                  <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
-                    {navItems.map((item) => {
-                      const Icon = item.icon
-                      const isActive = activeTab === item.href
-                      return (
-                        <button
-                          key={item.href}
-                          onClick={() => onTabChange(item.href)}
-                          className={cn(
-                            "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group relative overflow-hidden",
-                            isActive
-                              ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/25"
-                              : "text-muted-foreground hover:text-foreground hover:bg-accent/50 hover:shadow-sm",
-                          )}
-                        >
-                          {!isActive && (
-                            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                          )}
-                          <Icon
-                            className={cn(
-                              "w-5 h-5 relative z-10 transition-transform duration-200",
-                              isActive ? "scale-110" : "group-hover:scale-110",
-                            )}
-                          />
-                          <span className="relative z-10">{item.title}</span>
-                          {isActive && (
-                            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white rounded-r-full" />
-                          )}
-                        </button>
-                      )
-                    })}
-                  </nav>
-
-                  {/* Mobile Footer */}
-                  <div className="px-6 py-4 border-t border-border/50">
-                    <p className="text-xs text-muted-foreground text-center font-medium">
-                      Stay on track. Stay in control.
-                    </p>
+                  <div>
+                    <h1 className="text-xl font-bold text-foreground">
+                      Trackify
+                    </h1>
+                    <p className="text-xs text-muted-foreground">Smart Budget Dashboard</p>
                   </div>
                 </div>
-              </SheetContent>
-            </Sheet>
-          </div>
+
+                {/* Mobile Navigation */}
+                <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto bg-card">
+                  {navItems.map((item) => {
+                    const Icon = item.icon
+                    const isActive = activeTab === item.href
+                    return (
+                      <button
+                        key={item.href}
+                        onClick={() => onTabChange(item.href)}
+                        className={cn(
+                          "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group relative overflow-hidden",
+                          isActive
+                            ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/25"
+                            : "text-muted-foreground hover:text-foreground hover:bg-accent/50 hover:shadow-sm",
+                        )}
+                      >
+                        {!isActive && (
+                          <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        )}
+                        <Icon
+                          className={cn(
+                            "w-5 h-5 relative z-10 transition-transform duration-200",
+                            isActive ? "scale-110" : "group-hover:scale-110",
+                          )}
+                        />
+                        <span className="relative z-10">{item.title}</span>
+                        {isActive && (
+                          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white rounded-r-full" />
+                        )}
+                      </button>
+                    )
+                  })}
+                </nav>
+
+                {/* Mobile Footer */}
+                <div className="px-6 py-4 border-t border-border bg-card">
+                  <p className="text-xs text-muted-foreground text-center font-medium">
+                    Stay on track. Stay in control.
+                  </p>
+                </div>
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
     </>
