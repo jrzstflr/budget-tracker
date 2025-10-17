@@ -46,14 +46,16 @@ export default function DashboardPage() {
     <div className="flex min-h-screen bg-background">
       <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
 
-      <main className="flex-1 lg:ml-64 pt-20 lg:pt-0">
+      <main className="flex-1 lg:ml-64 lg:pt-0">
         {/* Top Bar with Theme Toggle & User Menu */}
-        <div className="fixed top-4 right-4 z-50 flex items-center gap-2 lg:top-6 lg:right-6">
+        <div className="fixed top-4 right-4 z-50 flex items-center gap-2 lg:top-6 lg:right-6 md:top-20 md:right-6">
           <ThemeToggle />
           <UserMenu onNavigate={setActiveTab} />
         </div>
 
-        <div className="container mx-auto p-4 md:p-6 lg:p-8 animate-in fade-in duration-500">{renderContent()}</div>
+        <div className="container mx-auto p-4 md:p-6 lg:p-8 animate-in fade-in duration-500 mt-20 lg:mt-0">
+          {renderContent()}
+        </div>
       </main>
     </div>
   )

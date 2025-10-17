@@ -161,7 +161,7 @@ export default function Dashboard() {
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {/* Total Income Card */}
-        <Card className="glass-effect card-hover border-l-4 border-l-green-500 overflow-hidden relative group">
+        <Card className="glass-effect transition-all duration-300 hover:shadow-xl hover:scale-[1.02] hover:-translate-y-1 border-l-4 border-l-green-500 overflow-hidden relative group">
           <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
             <CardTitle className="text-sm font-medium text-muted-foreground">Total Income</CardTitle>
@@ -179,7 +179,7 @@ export default function Dashboard() {
         </Card>
 
         {/* Total Expenses Card */}
-        <Card className="glass-effect card-hover border-l-4 border-l-red-500 overflow-hidden relative group">
+        <Card className="glass-effect transition-all duration-300 hover:shadow-xl hover:scale-[1.02] hover:-translate-y-1 border-l-4 border-l-red-500 overflow-hidden relative group">
           <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
             <CardTitle className="text-sm font-medium text-muted-foreground">Total Expenses</CardTitle>
@@ -198,7 +198,7 @@ export default function Dashboard() {
 
         {/* Net Balance Card */}
         <Card
-          className={`glass-effect card-hover border-l-4 overflow-hidden relative group ${
+          className={`glass-effect transition-all duration-300 hover:shadow-xl hover:scale-[1.02] hover:-translate-y-1 border-l-4 overflow-hidden relative group ${
             balance >= 0 ? "border-l-blue-500" : "border-l-orange-500"
           }`}
         >

@@ -1,4 +1,4 @@
-// components/Sidebar.tsx - FIXED VERSION
+// components/Sidebar.tsx - UPDATED VERSION
 "use client"
 
 import type React from "react"
@@ -59,10 +59,8 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
               />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-foreground">
-                Trackify
-              </h1>
-              <p className="text-xs text-muted-foreground">Smart Budget Dashboard</p>
+              <h1 className="text-xl font-bold text-foreground">Trackify</h1>
+              <p className="text-xs text-muted-foreground">Powered by Jrz | Dev</p>
             </div>
           </div>
 
@@ -102,7 +100,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
 
           {/* Footer */}
           <div className="px-4 py-4 border-t border-border bg-card">
-            <p className="text-xs text-muted-foreground text-center font-medium">Stay on track. Stay in control.</p>
+            <p className="text-xs text-muted-foreground text-center font-medium">© 2025 Trackify. All rights reserved.</p>
           </div>
         </div>
       </aside>
@@ -123,9 +121,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
               />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-foreground">
-                Trackify
-              </h1>
+              <h1 className="text-lg font-bold text-foreground">Trackify</h1>
             </div>
           </div>
 
@@ -155,10 +151,8 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
                     />
                   </div>
                   <div>
-                    <h1 className="text-xl font-bold text-foreground">
-                      Trackify
-                    </h1>
-                    <p className="text-xs text-muted-foreground">Smart Budget Dashboard</p>
+                    <h1 className="text-xl font-bold text-foreground">Trackify</h1>
+                    <p className="text-xs text-muted-foreground">Powered by Jrz | Dev</p>
                   </div>
                 </div>
 
@@ -199,7 +193,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
                 {/* Mobile Footer */}
                 <div className="px-6 py-4 border-t border-border bg-card">
                   <p className="text-xs text-muted-foreground text-center font-medium">
-                    Stay on track. Stay in control.
+                    © 2025 Trackify. All rights reserved.
                   </p>
                 </div>
               </div>
