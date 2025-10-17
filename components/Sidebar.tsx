@@ -1,4 +1,4 @@
-// components/Sidebar.tsx - UPDATED VERSION
+// components/Sidebar.tsx - FINAL FIXED VERSION
 "use client"
 
 import type React from "react"
@@ -44,10 +44,16 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
   return (
     <>
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 bg-card border-r border-border shadow-xl">
+      <aside
+        className={cn(
+          "hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0",
+          "bg-background dark:bg-gray-900 border-r border-border shadow-xl z-50",
+          "backdrop-blur-md bg-opacity-95"
+        )}
+      >
         <div className="flex flex-col h-full">
-          {/* Logo/Brand - FIXED: Solid background and visible text */}
-          <div className="flex items-center gap-3 px-6 py-6 border-b border-border bg-card">
+          {/* Logo/Brand */}
+          <div className="flex items-center gap-3 px-6 py-6 border-b border-border">
             <div className="relative w-10 h-10 rounded-xl overflow-hidden shadow-lg ring-2 ring-blue-500/10">
               <Image
                 src="https://github.com/jrzstflr/logo2/blob/main/jrz_logo_v2.png?raw=true"
@@ -65,7 +71,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto bg-card">
+          <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
             {navItems.map((item) => {
               const Icon = item.icon
               const isActive = activeTab === item.href
@@ -77,7 +83,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
                     "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group relative overflow-hidden",
                     isActive
                       ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/25 scale-[1.02]"
-                      : "text-muted-foreground hover:text-foreground hover:bg-accent/50 hover:scale-[1.01] hover:shadow-sm",
+                      : "text-muted-foreground hover:text-foreground hover:bg-accent/50 hover:scale-[1.01] hover:shadow-sm"
                   )}
                 >
                   {!isActive && (
@@ -86,7 +92,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
                   <Icon
                     className={cn(
                       "w-5 h-5 relative z-10 transition-transform duration-200",
-                      isActive ? "scale-110" : "group-hover:scale-110",
+                      isActive ? "scale-110" : "group-hover:scale-110"
                     )}
                   />
                   <span className="relative z-10">{item.title}</span>
@@ -99,14 +105,16 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
           </nav>
 
           {/* Footer */}
-          <div className="px-4 py-4 border-t border-border bg-card">
-            <p className="text-xs text-muted-foreground text-center font-medium">© 2025 Trackify. All rights reserved.</p>
+          <div className="px-4 py-4 border-t border-border">
+            <p className="text-xs text-muted-foreground text-center font-medium">
+              © 2025 Trackify. All rights reserved.
+            </p>
           </div>
         </div>
       </aside>
 
-      {/* Mobile Header - FIXED: Solid background */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-card border-b border-border shadow-lg">
+      {/* Mobile Header */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-background dark:bg-gray-900 border-b border-border shadow-lg backdrop-blur-md bg-opacity-95">
         <div className="flex items-center justify-between px-4 py-4">
           {/* Logo/Brand */}
           <div className="flex items-center gap-2">
@@ -136,10 +144,13 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
                 <Menu className="w-6 h-6" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-64 p-0 bg-card border-r border-border">
+            <SheetContent
+              side="left"
+              className="w-64 p-0 bg-background dark:bg-gray-900 border-r border-border shadow-xl backdrop-blur-md bg-opacity-95 overflow-y-auto"
+            >
               <div className="flex flex-col h-full">
                 {/* Mobile Logo */}
-                <div className="flex items-center gap-3 px-6 py-6 border-b border-border bg-card">
+                <div className="flex items-center gap-3 px-6 py-6 border-b border-border">
                   <div className="relative w-10 h-10 rounded-xl overflow-hidden shadow-lg">
                     <Image
                       src="https://github.com/jrzstflr/logo2/blob/main/jrz_logo_v2.png?raw=true"
@@ -157,7 +168,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
                 </div>
 
                 {/* Mobile Navigation */}
-                <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto bg-card">
+                <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
                   {navItems.map((item) => {
                     const Icon = item.icon
                     const isActive = activeTab === item.href
@@ -169,7 +180,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
                           "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group relative overflow-hidden",
                           isActive
                             ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/25"
-                            : "text-muted-foreground hover:text-foreground hover:bg-accent/50 hover:shadow-sm",
+                            : "text-muted-foreground hover:text-foreground hover:bg-accent/50 hover:shadow-sm"
                         )}
                       >
                         {!isActive && (
@@ -178,7 +189,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
                         <Icon
                           className={cn(
                             "w-5 h-5 relative z-10 transition-transform duration-200",
-                            isActive ? "scale-110" : "group-hover:scale-110",
+                            isActive ? "scale-110" : "group-hover:scale-110"
                           )}
                         />
                         <span className="relative z-10">{item.title}</span>
@@ -191,7 +202,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
                 </nav>
 
                 {/* Mobile Footer */}
-                <div className="px-6 py-4 border-t border-border bg-card">
+                <div className="px-6 py-4 border-t border-border">
                   <p className="text-xs text-muted-foreground text-center font-medium">
                     © 2025 Trackify. All rights reserved.
                   </p>
