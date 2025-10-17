@@ -47,8 +47,7 @@ export default function DashboardPage() {
       <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
 
       <main className="flex-1 lg:ml-64">
-        {/* Top Bar with Theme Toggle & User Menu - FIXED: Adjusted positioning for mobile */}
-        <div className="fixed top-20 right-4 z-40 flex items-center gap-2 lg:top-6 lg:right-6">
+        <div className="fixed top-6 right-4 z-50 flex items-center gap-2 lg:top-6 lg:right-6">
           <ThemeToggle />
           <UserMenu onNavigate={setActiveTab} />
         </div>

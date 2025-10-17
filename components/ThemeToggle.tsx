@@ -13,7 +13,9 @@ export const ThemeToggle = () => {
   }, [])
 
   const handleThemeToggle = useCallback(() => {
+    console.log("[v0] Current theme:", theme)
     const newTheme = theme === "dark" ? "light" : "dark"
+    console.log("[v0] Setting theme to:", newTheme)
     setTheme(newTheme)
   }, [theme, setTheme])
 
