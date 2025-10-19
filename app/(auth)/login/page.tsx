@@ -149,14 +149,22 @@ export default function LoginPage() {
             </Button>
           </div>
 
-          <div className="relative py-4">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-border" />
-            </div>
-            <div className="relative flex justify-center">
-              <span className="bg-card px-4 text-sm text-muted-foreground">Or continue with email</span>
-            </div>
-          </div>
+<div className="relative py-4">
+  {/* Line */}
+  <div className="absolute inset-0 flex items-center">
+    <div className="w-full border-t border-border" />
+  </div>
+
+  {/* Text */}
+  <div className="relative flex justify-center">
+    <span className="relative z-10 inline-block bg-[hsl(var(--background))] px-4 text-sm text-muted-foreground rounded-md">
+      Or continue with email
+    </span>
+  </div>
+</div>
+
+
+
 
           <form onSubmit={handleEmailSignIn} className="space-y-4">
             <div className="space-y-2">
