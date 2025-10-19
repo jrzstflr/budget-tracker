@@ -117,8 +117,9 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground transition-colors duration-300;
   }
 
   html {
@@ -144,6 +145,20 @@
 }
 
 @layer utilities {
+
+  .dark .glass-effect {
+    @apply bg-card/90 backdrop-blur-sm border-border/50;
+  }
+
+  .dark .gradient-border {
+    background: linear-gradient(var(--card), var(--card)) padding-box,
+      linear-gradient(135deg, rgb(59 130 246 / 0.3), rgb(139 92 246 / 0.3)) border-box;
+  }
+
+  .dark .shimmer {
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+  }
+
   .text-balance {
     text-wrap: balance;
   }
@@ -172,4 +187,5 @@
       transform: translateX(100%);
     }
   }
-}
+
+} /* ✅ Properly closes @layer utilities */

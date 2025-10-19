@@ -1,8 +1,9 @@
-'use client'
+"use client"
 
-import React, { createContext, useContext, useState, useEffect } from 'react'
+import type React from "react"
+import { createContext, useContext } from "react"
 
-export type Mode = 'light' | 'dark' | 'system'
+export type Mode = "light" | "dark" | "system"
 
 export interface Settings {
   mode: Mode
@@ -20,42 +21,27 @@ interface SettingsContextType {
 }
 
 const defaultSettings: Settings = {
-  mode: 'light',
+  mode: "light",
   theme: {
     styles: {
       light: {},
-      dark: {}
-    }
-  }
+      dark: {},
+    },
+  },
 }
 
 const SettingsContext = createContext<SettingsContextType>({
   settings: defaultSettings,
-  updateSettings: () => {}
+  updateSettings: () => {},
 })
 
 export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [settings, setSettings] = useState<Settings>(defaultSettings)
-
-  useEffect(() => {
-    // Load settings from localStorage on mount
-    const savedSettings = localStorage.getItem('app-settings')
-    if (savedSettings) {
-      try {
-        setSettings(JSON.parse(savedSettings))
-      } catch (error) {
-        console.error('Failed to parse saved settings:', error)
-      }
-    }
-  }, [])
-
   const updateSettings = (newSettings: Settings) => {
-    setSettings(newSettings)
-    localStorage.setItem('app-settings', JSON.stringify(newSettings))
+    console.log("[v0] Settings updated:", newSettings)
   }
 
   return (
-    <SettingsContext.Provider value={{ settings, updateSettings }}>
+    <SettingsContext.Provider value={{ settings: defaultSettings, updateSettings }}>
       {children}
     </SettingsContext.Provider>
   )
@@ -64,7 +50,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 export const useSettings = () => {
   const context = useContext(SettingsContext)
   if (!context) {
-    throw new Error('useSettings must be used within a SettingsProvider')
+    throw new Error("useSettings must be used within a SettingsProvider")
   }
   return context
 }

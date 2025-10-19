@@ -21,7 +21,12 @@ export const ThemeToggle = () => {
     return <div className="h-10 w-10 rounded-full border border-input bg-background" />
   }
 
-  const currentTheme = (theme === "system" ? "light" : theme) as "light" | "dark"
+  const currentTheme =
+    theme === "system"
+      ? typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light"
+      : (theme as "light" | "dark")
 
   return <ThemeToggleButton theme={currentTheme} onClick={handleThemeToggle} variant="circle" start="center" />
 }

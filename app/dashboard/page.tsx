@@ -47,13 +47,11 @@ export default function DashboardPage() {
       <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
 
       <main className="flex-1 lg:ml-64">
-        {/* Top Bar with Theme Toggle & User Menu - FIXED: Adjusted positioning for mobile */}
         <div className="fixed top-20 right-4 z-40 flex items-center gap-2 lg:top-6 lg:right-6">
           <ThemeToggle />
           <UserMenu onNavigate={setActiveTab} />
         </div>
 
-        {/* FIXED: Removed mt-20 from mobile, only add padding for mobile header space */}
         <div className="container mx-auto p-4 md:p-6 lg:p-8 animate-in fade-in duration-500 pt-24 lg:pt-8">
           {renderContent()}
         </div>

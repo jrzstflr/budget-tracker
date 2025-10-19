@@ -1,4 +1,3 @@
-// contexts/AuthContext.tsx
 "use client"
 
 import type React from "react"
@@ -68,33 +67,68 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInWithGoogle = async () => {
     if (!auth) throw new Error("Firebase not configured")
-    const provider = new GoogleAuthProvider()
-    provider.setCustomParameters({
-      prompt: "select_account",
-    })
-    await signInWithPopup(auth, provider)
+    try {
+      const provider = new GoogleAuthProvider()
+      provider.setCustomParameters({
+        prompt: "select_account",
+      })
+      setError(null)
+      await signInWithPopup(auth, provider)
+    } catch (err: any) {
+      const errorMessage = err.message || "Failed to sign in with Google"
+      setError(errorMessage)
+      throw err
+    }
   }
 
   const signInWithGithub = async () => {
     if (!auth) throw new Error("Firebase not configured")
-    const provider = new GithubAuthProvider()
-    provider.addScope("user:email")
-    await signInWithPopup(auth, provider)
+    try {
+      const provider = new GithubAuthProvider()
+      provider.addScope("user:email")
+      setError(null)
+      await signInWithPopup(auth, provider)
+    } catch (err: any) {
+      const errorMessage = err.message || "Failed to sign in with GitHub"
+      setError(errorMessage)
+      throw err
+    }
   }
 
   const signInWithEmail = async (email: string, password: string) => {
     if (!auth) throw new Error("Firebase not configured")
-    await signInWithEmailAndPassword(auth, email, password)
+    try {
+      setError(null)
+      await signInWithEmailAndPassword(auth, email, password)
+    } catch (err: any) {
+      const errorMessage = err.message || "Failed to sign in with email"
+      setError(errorMessage)
+      throw err
+    }
   }
 
   const signUpWithEmail = async (email: string, password: string) => {
     if (!auth) throw new Error("Firebase not configured")
-    await createUserWithEmailAndPassword(auth, email, password)
+    try {
+      setError(null)
+      await createUserWithEmailAndPassword(auth, email, password)
+    } catch (err: any) {
+      const errorMessage = err.message || "Failed to sign up with email"
+      setError(errorMessage)
+      throw err
+    }
   }
 
   const signOut = async () => {
     if (!auth) throw new Error("Firebase not configured")
-    await firebaseSignOut(auth)
+    try {
+      setError(null)
+      await firebaseSignOut(auth)
+    } catch (err: any) {
+      const errorMessage = err.message || "Failed to sign out"
+      setError(errorMessage)
+      throw err
+    }
   }
 
   const value = {
